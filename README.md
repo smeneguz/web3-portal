@@ -48,12 +48,66 @@ To get started with the Web3 Portal project, follow these steps:
    npm install
    ```
 
-3. **Run the Development Server**:
+3. **Set up environment variables**
+   ```bash
+   cp .env.example .env.local
+   ```
+   
+   Fill in your environment variables:
+   ```env
+   # Required
+   NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID=your_walletconnect_project_id
+   
+   # Optional - for contract deployment
+   PRIVATE_KEY=your_private_key
+   INFURA_PROJECT_ID=your_infura_project_id
+   PINATA_API_KEY=your_pinata_api_key
+   PINATA_SECRET_KEY=your_pinata_secret_key
+   
+   # Contract addresses (will be filled after deployment)
+   NEXT_PUBLIC_CONTRACT_ADDRESS_LOCALHOST=
+   NEXT_PUBLIC_CONTRACT_ADDRESS_SEPOLIA=
+   ```
+
+4. **Run the Development Server**:
    ```
    npm run dev
    ```
 
-4. **Open your browser** and navigate to `http://localhost:3000` to view the application.
+5. **Open your browser** and navigate to `http://localhost:3000` to view the application.
+
+
+## Smart Contract Development
+
+### Local Development
+
+1. **Start Hardhat network**
+   ```bash
+   # Terminal 1
+   npm run node
+   ```
+
+2. **Deploy contracts**
+   ```bash
+   # Terminal 2
+   npm run deploy:local
+   ```
+
+3. **Run tests**
+   ```bash
+   npm test
+   ```
+
+### Testnet Deployment
+
+1. **Deploy to Sepolia**
+   ```bash
+   npm run deploy:sepolia
+   ```
+
+2. **Verify contract**
+   ```bash
+   npm run verify:sepolia YOUR_CONTRACT_ADDRESS
 
 ## Contributing
 

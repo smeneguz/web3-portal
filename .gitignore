@@ -52,3 +52,7 @@ jspm_packages/
 
 # Turbo
 .turbo
+
+# hardat files
+cache/
+artifacts/

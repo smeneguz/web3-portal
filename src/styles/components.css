@@ -94,3 +94,104 @@ a:hover {
 .mint-nft button:hover {
     background-color: #005bb5;
 }
+
+
+
+
+/* Stat Card Component */
+.stat-card {
+  @apply bg-gray-800/50 rounded-lg p-4 text-center border border-gray-700 hover:border-gray-600 transition-colors;
+}
+
+.stat-card:hover {
+  @apply bg-gray-800/70;
+}
+
+/* Card Component */
+.card {
+  @apply bg-gray-900/80 backdrop-blur-sm border border-gray-800 rounded-xl p-6;
+}
+
+/* Button Styles */
+.btn-primary {
+  @apply bg-gradient-to-r from-web3-primary to-web3-secondary text-white font-semibold py-3 px-6 rounded-lg 
+         hover:shadow-lg hover:shadow-web3-primary/25 transition-all duration-200 
+         disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-none;
+}
+
+.btn-secondary {
+  @apply bg-gray-800 text-white font-semibold py-3 px-6 rounded-lg border border-gray-700 
+         hover:bg-gray-700 hover:border-gray-600 transition-all duration-200;
+}
+
+/* Enhanced mint NFT specific styles */
+.mint-nft {
+  @apply space-y-6;
+}
+
+.mint-nft input[type="number"] {
+  @apply bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white text-center font-bold
+         focus:ring-2 focus:ring-web3-primary focus:border-transparent transition-all;
+}
+
+.mint-nft input[type="number"]:focus {
+  @apply outline-none;
+}
+
+/* Progress bar */
+.progress-bar {
+  @apply w-full bg-gray-700 rounded-full h-3 overflow-hidden;
+}
+
+.progress-fill {
+  @apply bg-gradient-to-r from-web3-primary to-web3-secondary h-full rounded-full transition-all duration-1000;
+}
+
+/* Status indicators */
+.status-indicator {
+  @apply flex items-center space-x-2;
+}
+
+.status-dot {
+  @apply w-2 h-2 rounded-full;
+}
+
+.status-dot.active {
+  @apply bg-green-500;
+}
+
+.status-dot.inactive {
+  @apply bg-red-500;
+}
+
+/* NFT grid */
+.nft-grid {
+  @apply grid grid-cols-3 gap-2;
+}
+
+.nft-placeholder {
+  @apply aspect-square bg-gray-800 rounded-lg flex items-center justify-center 
+         border border-gray-700 hover:border-web3-primary transition-colors;
+}
+
+/* Loading states */
+.loading-skeleton {
+  @apply animate-pulse bg-gray-700 rounded;
+}
+
+/* Error states */
+.error-container {
+  @apply bg-red-500/10 border border-red-500/20 rounded-lg p-4;
+}
+
+.warning-container {
+  @apply bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-4;
+}
+
+.info-container {
+  @apply bg-blue-500/10 border border-blue-500/20 rounded-lg p-4;
+}
+
+.success-container {
+  @apply bg-green-500/10 border border-green-500/20 rounded-lg p-4;
+}

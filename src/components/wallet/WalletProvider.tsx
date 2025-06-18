@@ -2,96 +2,113 @@
 
 import { ReactNode } from 'react';
 import { WagmiConfig, createConfig, configureChains } from 'wagmi';
-import { mainnet, polygon, optimism, arbitrum, base, goerli } from 'wagmi/chains';
-import { alchemyProvider } from 'wagmi/providers/alchemy';
+import { hardhat, mainnet, polygon, sepolia } from 'wagmi/chains';
 import { publicProvider } from 'wagmi/providers/public';
-import { RainbowKitProvider, getDefaultWallets, connectorsForWallets, darkTheme } from '@rainbow-me/rainbowkit';
-import { 
-  injectedWallet, 
-  metaMaskWallet, 
-  coinbaseWallet, 
-  walletConnectWallet,
-  rainbowWallet,
-  trustWallet,
-  ledgerWallet,
-  argentWallet,
-  imTokenWallet,
-  omniWallet,
-  braveWallet
-} from '@rainbow-me/rainbowkit/wallets';
+import { jsonRpcProvider } from 'wagmi/providers/jsonRpc';
+import { RainbowKitProvider, connectorsForWallets } from '@rainbow-me/rainbowkit';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { metaMaskWallet, walletConnectWallet, rainbowWallet, coinbaseWallet } from '@rainbow-me/rainbowkit/wallets';
 
-interface WalletProviderProps {
-  children: ReactNode;
-}
-
-// Configure chains with fallback
+// Configure chains
 const { chains, publicClient, webSocketPublicClient } = configureChains(
-  [mainnet, polygon, optimism, arbitrum, base, goerli],
   [
-    alchemyProvider({ 
-      apiKey: process.env.NEXT_PUBLIC_ALCHEMY_ID || 'demo' 
+    hardhat,
+    ...(process.env.NODE_ENV === 'development' ? [sepolia] : [mainnet, polygon, sepolia]),
+  ],
+  [
+    jsonRpcProvider({
+      rpc: (chain) => {
+        if (chain.id === 31337) {
+          return { http: 'http://127.0.0.1:8545' };
+        }
+        return null;
+      },
     }),
-    publicProvider()
+    publicProvider(),
   ]
 );
 
-// Get project ID with fallback
-const projectId = process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID || 'e7de1aa32a4ea8116d29ba2d922140d1';
+// Configure connectors
+const projectId = process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID || 'demo-project-id';
 
-// Configure connectors with comprehensive wallet support
 const connectors = connectorsForWallets([
   {
-    groupName: 'Popular',
+    groupName: 'Recommended',
     wallets: [
-      injectedWallet({ chains }),
-      metaMaskWallet({ projectId, chains }),
-      rainbowWallet({ projectId, chains }),
-      coinbaseWallet({ appName: 'Web3 Portal', chains }),
-      walletConnectWallet({ projectId, chains }),
-    ],
-  },
-  {
-    groupName: 'More Options',
-    wallets: [
-      trustWallet({ projectId, chains }),
-      braveWallet({ chains }),
-      ledgerWallet({ projectId, chains }),
-      argentWallet({ projectId, chains }),
-      imTokenWallet({ projectId, chains }),
-      omniWallet({ projectId, chains }),
+      metaMaskWallet({ 
+        chains, 
+        projectId,
+        shimDisconnect: true,
+      }),
+      walletConnectWallet({ 
+        chains, 
+        projectId,
+        options: {
+          projectId,
+        },
+      }),
+      rainbowWallet({ 
+        chains, 
+        projectId,
+      }),
+      coinbaseWallet({
+        appName: 'Web3Portal',
+        chains,
+      }),
     ],
   },
 ]);
 
-// Create wagmi config with error handling
+// Create wagmi config
 const wagmiConfig = createConfig({
-  autoConnect: false, // Disable auto-connect to prevent extension errors
+  autoConnect: false,
   connectors,
   publicClient,
   webSocketPublicClient,
 });
 
-export default function WalletProvider({ children }: WalletProviderProps) {
+// Create query client with proper error typing
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 5, // 5 minutes
+      retry: (failureCount, error: unknown) => {
+        // Properly type check the error
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        
+        // Don't retry on wallet connection errors
+        if (errorMessage.includes('User rejected') || 
+            errorMessage.includes('Extension ID') ||
+            errorMessage.includes('User denied') ||
+            errorMessage.includes('rejected')) {
+          return false;
+        }
+        return failureCount < 3;
+      },
+    },
+  },
+});
+
+interface WalletProviderProps {
+  children: ReactNode;
+}
+
+export function WalletProvider({ children }: WalletProviderProps) {
   return (
-    <WagmiConfig config={wagmiConfig}>
-      <RainbowKitProvider 
-        chains={chains}
-        appInfo={{
-          appName: 'Web3 Portal',
-          learnMoreUrl: 'https://github.com/silviomeneguzzo/web3-portal',
-        }}
-        showRecentTransactions={true}
-        modalSize="compact"
-        theme={darkTheme({
-          accentColor: '#6366f1',
-          accentColorForeground: 'white',
-          borderRadius: 'medium',
-          fontStack: 'system',
-          overlayBlur: 'small',
-        })}
-      >
-        {children}
-      </RainbowKitProvider>
-    </WagmiConfig>
+    <QueryClientProvider client={queryClient}>
+      <WagmiConfig config={wagmiConfig}>
+        <RainbowKitProvider 
+          chains={chains}
+          initialChain={hardhat}
+          showRecentTransactions={true}
+          modalSize="compact"
+        >
+          {children}
+        </RainbowKitProvider>
+      </WagmiConfig>
+    </QueryClientProvider>
   );
 }
+
+// Export as default for compatibility
+export default WalletProvider;

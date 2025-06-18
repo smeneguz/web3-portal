@@ -1,6 +1,6 @@
 import type { AppProps } from 'next/app';
 import { useEffect, useState } from 'react';
-import WalletProvider from '@/components/wallet/WalletProvider';
+import WalletProvider from '@/components/wallet/WalletProvider'; // Default import
 import Layout from '@/components/common/Layout';
 import '@/styles/globals.css';
 import '@rainbow-me/rainbowkit/styles.css';
