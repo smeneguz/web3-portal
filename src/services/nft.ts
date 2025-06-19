@@ -1,6 +1,7 @@
 import { PublicClient, WalletClient } from 'viem';
 import { mainnet, sepolia, polygon, hardhat } from 'viem/chains';
 import { WEB3_PORTAL_NFT_ABI } from '@/contracts/abi';
+import { calculateMintGas, validateGasParameters } from '@/utils/gasCalculation';
 
 // Types
 interface NFT {
@@ -109,10 +110,27 @@ export const mintNFT = async (
 
         const totalCost = mintPrice * BigInt(quantity);
 
+        // Calculate optimal gas using unified system
+        const gasEstimation = await calculateMintGas(
+            publicClient,
+            contractAddress,
+            account,
+            quantity,
+            mintPrice
+        );
+
+        // Validate gas and balance
+        const userBalance = await publicClient.getBalance({ address: account });
+        const gasValidation = validateGasParameters(gasEstimation, userBalance, totalCost);
+        
+        if (!gasValidation.isValid) {
+            throw new Error(gasValidation.reason);
+        }
+
         // Get chain config for the write operation
         const chain = getChainConfig(chainId);
 
-        // Call the mint function with required chain parameter
+        // Call the mint function with calculated gas
         const hash = await walletClient.writeContract({
             address: contractAddress as `0x${string}`,
             abi: WEB3_PORTAL_NFT_ABI,
@@ -120,7 +138,8 @@ export const mintNFT = async (
             args: [BigInt(quantity)],
             value: totalCost,
             account,
-            chain, // ✅ Fixed: Added required chain parameter
+            chain,
+            gas: gasEstimation.gasWithBuffer, // Use calculated gas from unified system
         });
 
         console.log('Mint transaction sent:', hash);
@@ -128,6 +147,8 @@ export const mintNFT = async (
         // Wait for confirmation
         const receipt = await publicClient.waitForTransactionReceipt({ hash });
         console.log('Mint transaction confirmed:', receipt.transactionHash);
+        console.log('Gas used:', receipt.gasUsed.toString());
+        console.log('Gas estimated:', gasEstimation.gasWithBuffer.toString());
         
         return receipt.transactionHash;
     } catch (error: any) {

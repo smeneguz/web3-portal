@@ -1,31 +1,36 @@
 import { ContractAddresses } from './types';
 
-export const CONTRACT_ADDRESSES: ContractAddresses = {
-  // Local development
-  localhost: process.env.NEXT_PUBLIC_CONTRACT_ADDRESS_LOCALHOST || "",
-  hardhat: process.env.NEXT_PUBLIC_CONTRACT_ADDRESS_LOCALHOST || "",
+const CONTRACT_ADDRESSES: ContractAddresses = {
+  // Localhost Hardhat
+  31337: process.env.NEXT_PUBLIC_CONTRACT_ADDRESS_LOCALHOST || '',
   
-  // Testnets
-  sepolia: process.env.NEXT_PUBLIC_CONTRACT_ADDRESS_SEPOLIA || "",
-  goerli: process.env.NEXT_PUBLIC_CONTRACT_ADDRESS_GOERLI || "",
-  polygonMumbai: process.env.NEXT_PUBLIC_CONTRACT_ADDRESS_MUMBAI || "",
+  // Sepolia Testnet
+  11155111: process.env.NEXT_PUBLIC_CONTRACT_ADDRESS_SEPOLIA || '',
   
-  // Mainnets
-  mainnet: process.env.NEXT_PUBLIC_CONTRACT_ADDRESS_MAINNET || "",
-  polygon: process.env.NEXT_PUBLIC_CONTRACT_ADDRESS_POLYGON || "",
+  // Polygon Mumbai Testnet
+  80001: process.env.NEXT_PUBLIC_CONTRACT_ADDRESS_MUMBAI || '',
+  
+  // Polygon Mainnet
+  137: process.env.NEXT_PUBLIC_CONTRACT_ADDRESS_POLYGON || '',
 };
 
-export const getContractAddress = (chainId: number): string => {
-  const chainIdToNetwork: { [key: number]: string } = {
-    1: 'mainnet',
-    5: 'goerli',
-    11155111: 'sepolia',
-    137: 'polygon',
-    80001: 'polygonMumbai',
-    31337: 'localhost', // Changed from 1337 to 31337
-    1337: 'localhost'   // Keep both for compatibility
-  };
+export function getContractAddress(chainId: number): string | null {
+  const address = CONTRACT_ADDRESSES[chainId];
   
-  const network = chainIdToNetwork[chainId];
-  return network ? CONTRACT_ADDRESSES[network] : "";
-};
+  if (!address) {
+    console.warn(`No contract address configured for chain ID: ${chainId}`);
+    return null;
+  }
+  
+  return address;
+}
+
+export function isContractDeployed(chainId: number): boolean {
+  return !!getContractAddress(chainId);
+}
+
+export function getSupportedNetworks(): number[] {
+  return Object.keys(CONTRACT_ADDRESSES)
+    .map(Number)
+    .filter(chainId => CONTRACT_ADDRESSES[chainId]);
+}

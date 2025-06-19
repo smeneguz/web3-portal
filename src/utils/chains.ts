@@ -1,80 +1,62 @@
-// Define proper TypeScript interfaces
-interface NativeCurrency {
-  name: string;
-  symbol: string;
-  decimals: number;
-}
+import { ChainConfig } from '@/contracts/types';
 
-interface ChainConfig {
-  name: string;
-  rpcUrl: string;
-  chainId: number;
-  nativeCurrency: NativeCurrency;
-}
-
-interface ChainsConfig {
-  [key: string]: ChainConfig;
-}
-
-export const chains: ChainsConfig = {
-  ethereum: {
-    name: "Ethereum",
-    rpcUrl: "https://mainnet.infura.io/v3/YOUR_INFURA_PROJECT_ID",
-    chainId: 1,
-    nativeCurrency: {
-      name: "Ether",
-      symbol: "ETH",
+export const chains: Record<string, ChainConfig> = {
+  localhost: {
+    name: 'Hardhat Local',
+    chainId: 31337,
+    rpcUrl: 'http://127.0.0.1:8545',
+    blockExplorer: '',
+    currency: {
+      name: 'Ethereum',
+      symbol: 'ETH',
       decimals: 18,
     },
-  },
-  polygon: {
-    name: "Polygon",
-    rpcUrl: "https://polygon-rpc.com/",
-    chainId: 137,
-    nativeCurrency: {
-      name: "Matic",
-      symbol: "MATIC",
-      decimals: 18,
-    },
-  },
-  binanceSmartChain: {
-    name: "Binance Smart Chain",
-    rpcUrl: "https://bsc-dataseed.binance.org/",
-    chainId: 56,
-    nativeCurrency: {
-      name: "Binance Coin",
-      symbol: "BNB",
-      decimals: 18,
-    },
+    isTestnet: true,
   },
   sepolia: {
-    name: "Sepolia Testnet",
-    rpcUrl: "https://sepolia.infura.io/v3/YOUR_INFURA_PROJECT_ID",
+    name: 'Sepolia Testnet',
     chainId: 11155111,
-    nativeCurrency: {
-      name: "Sepolia Ether",
-      symbol: "SEP",
+    rpcUrl: process.env.NEXT_PUBLIC_SEPOLIA_RPC_URL || 'https://rpc2.sepolia.org',
+    blockExplorer: 'https://sepolia.etherscan.io',
+    currency: {
+      name: 'Ethereum',
+      symbol: 'ETH',
       decimals: 18,
     },
+    isTestnet: true,
+    faucetUrl: 'https://sepoliafaucet.com',
   },
-  localhost: {
-    name: "Localhost",
-    rpcUrl: "http://127.0.0.1:8545",
-    chainId: 31337,
-    nativeCurrency: {
-      name: "Localhost Ether",
-      symbol: "ETH",
+  polygon: {
+    name: 'Polygon Mainnet',
+    chainId: 137,
+    rpcUrl: process.env.NEXT_PUBLIC_POLYGON_RPC_URL || 'https://polygon-rpc.com',
+    blockExplorer: 'https://polygonscan.com',
+    currency: {
+      name: 'Polygon',
+      symbol: 'MATIC',
       decimals: 18,
     },
+    isTestnet: false,
+  },
+  polygonMumbai: {
+    name: 'Polygon Mumbai',
+    chainId: 80001,
+    rpcUrl: process.env.NEXT_PUBLIC_MUMBAI_RPC_URL || 'https://rpc-mumbai.maticvigil.com',
+    blockExplorer: 'https://mumbai.polygonscan.com',
+    currency: {
+      name: 'Polygon',
+      symbol: 'MATIC',
+      decimals: 18,
+    },
+    isTestnet: true,
+    faucetUrl: 'https://faucet.polygon.technology',
   },
 };
 
-// Properly typed function with return type annotation
 export const getChainById = (chainId: number): ChainConfig | undefined => {
   return Object.values(chains).find(chain => chain.chainId === chainId);
 };
 
-// Additional utility functions
 export const getSupportedChainIds = (): number[] => {
   return Object.values(chains).map(chain => chain.chainId);
 };
@@ -88,5 +70,17 @@ export const getChainName = (chainId: number): string => {
   return chain?.name || 'Unknown Network';
 };
 
-// Export types for use in other files
-export type { ChainConfig, NativeCurrency, ChainsConfig };
+export const getMainnetChains = (): ChainConfig[] => {
+  return Object.values(chains).filter(chain => !chain.isTestnet);
+};
+
+export const getTestnetChains = (): ChainConfig[] => {
+  return Object.values(chains).filter(chain => chain.isTestnet);
+};
+
+export const getDefaultChain = (): ChainConfig => {
+  if (process.env.NODE_ENV === 'development') {
+    return chains.localhost;
+  }
+  return chains.polygon;
+};

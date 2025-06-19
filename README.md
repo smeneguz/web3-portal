@@ -121,3 +121,34 @@ This project is licensed under the MIT License. See the LICENSE file for more de
 
 - Thanks to the open-source community for their contributions and support.
 - Special thanks to the developers of the libraries and frameworks used in this project.
+
+## Test Localnet
+
+if you connect a new wallet on metamask in mint page 
+
+# Apri hardhat console
+npx hardhat console --network localhost
+
+Then execute: 
+
+// Get signers
+const [signer] = await ethers.getSigners();
+
+// Target address
+const targetAddress = "0xb67FcF3CB3541AF19139CE9bd8e3Fecf9B2db0d9";
+
+// Check balances
+console.log("Signer balance:", ethers.formatEther(await signer.getBalance()));
+console.log("Target balance:", ethers.formatEther(await ethers.provider.getBalance(targetAddress)));
+
+// Send 10 ETH
+const tx = await signer.sendTransaction({
+  to: targetAddress,
+  value: ethers.parseEther("10")
+});
+
+// Wait for confirmation
+await tx.wait();
+
+// Check new balances
+console.log("New target balance:", ethers.formatEther(await ethers.provider.getBalance(targetAddress)));

@@ -1,68 +1,72 @@
 require("@nomicfoundation/hardhat-toolbox");
 require("dotenv").config();
 
-/** @type import('hardhat/config').HardhatUserConfig */
+const PRIVATE_KEY = process.env.PRIVATE_KEY;
+const INFURA_PROJECT_ID = process.env.INFURA_PROJECT_ID;
+const ALCHEMY_API_KEY = process.env.ALCHEMY_API_KEY;
+
+// Mantieni la configurazione esistente e aggiungi le nuove reti
 module.exports = {
   solidity: {
-    version: "0.8.19",
+    version: "0.8.20",
     settings: {
       optimizer: {
         enabled: true,
-        runs: 200,
-      },
-    },
+        runs: 200
+      }
+    }
   },
   networks: {
     hardhat: {
-      chainId: 31337, // Changed from 1337 to standard 31337
-      accounts: {
-        count: 20,
-        accountsBalance: "10000000000000000000000" // 10000 ETH
+      chainId: 31337,
+      mining: {
+        auto: true,
+        interval: 0
       }
     },
     localhost: {
       url: "http://127.0.0.1:8545",
-      chainId: 31337, // Changed to match hardhat network
-      timeout: 60000,
-      // Remove the accounts array to use default hardhat accounts
+      chainId: 31337,
+      timeout: 60000
     },
+    // Aggiungi le nuove reti mantenendo quelle esistenti
     sepolia: {
-      url: process.env.SEPOLIA_RPC_URL || `https://sepolia.infura.io/v3/${process.env.INFURA_PROJECT_ID}`,
-      accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
-      gasPrice: 20000000000, // 20 gwei
-      gas: 6000000,
-    },
-    goerli: {
-      url: process.env.GOERLI_RPC_URL || `https://goerli.infura.io/v3/${process.env.INFURA_PROJECT_ID}`,
-      accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
+      url: INFURA_PROJECT_ID 
+        ? `https://sepolia.infura.io/v3/${INFURA_PROJECT_ID}`
+        : "https://rpc2.sepolia.org",
+      accounts: PRIVATE_KEY ? [PRIVATE_KEY] : [],
+      chainId: 11155111,
       gasPrice: 20000000000,
+      timeout: 60000
+    },
+    mumbai: {
+      url: ALCHEMY_API_KEY
+        ? `https://polygon-mumbai.g.alchemy.com/v2/${ALCHEMY_API_KEY}`
+        : "https://rpc-mumbai.maticvigil.com",
+      accounts: PRIVATE_KEY ? [PRIVATE_KEY] : [],
+      chainId: 80001,
+      gasPrice: 20000000000,
+      timeout: 60000
     },
     polygon: {
-      url: process.env.POLYGON_RPC_URL || "https://polygon-rpc.com",
-      accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
-      gasPrice: 35000000000, // 35 gwei
-    },
-    polygonMumbai: {
-      url: process.env.MUMBAI_RPC_URL || "https://rpc-mumbai.maticvigil.com",
-      accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
+      url: ALCHEMY_API_KEY
+        ? `https://polygon-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY}`
+        : "https://polygon-rpc.com",
+      accounts: PRIVATE_KEY ? [PRIVATE_KEY] : [],
+      chainId: 137,
+      gasPrice: 30000000000,
+      timeout: 60000
     }
   },
-  paths: {
-    sources: "./contracts",
-    tests: "./test",
-    cache: "./cache",
-    artifacts: "./artifacts"
+  etherscan: {
+    apiKey: {
+      sepolia: process.env.ETHERSCAN_API_KEY,
+      polygon: process.env.POLYGONSCAN_API_KEY,
+      polygonMumbai: process.env.POLYGONSCAN_API_KEY
+    }
   },
   gasReporter: {
     enabled: process.env.REPORT_GAS !== undefined,
     currency: "USD",
   },
-  etherscan: {
-    apiKey: {
-      mainnet: process.env.ETHERSCAN_API_KEY,
-      sepolia: process.env.ETHERSCAN_API_KEY,
-      polygon: process.env.POLYGONSCAN_API_KEY,
-      polygonMumbai: process.env.POLYGONSCAN_API_KEY,
-    }
-  }
 };
