@@ -7,30 +7,23 @@ const CONTRACT_ADDRESSES: ContractAddresses = {
   // Sepolia Testnet
   11155111: process.env.NEXT_PUBLIC_CONTRACT_ADDRESS_SEPOLIA || '',
   
-  // Polygon Mumbai Testnet
-  80001: process.env.NEXT_PUBLIC_CONTRACT_ADDRESS_MUMBAI || '',
+  // Polygon Amoy Testnet (NEW - replaces Mumbai)
+  80002: process.env.NEXT_PUBLIC_CONTRACT_ADDRESS_AMOY || '',
   
   // Polygon Mainnet
   137: process.env.NEXT_PUBLIC_CONTRACT_ADDRESS_POLYGON || '',
 };
 
 export function getContractAddress(chainId: number): string | null {
-  const address = CONTRACT_ADDRESSES[chainId];
-  
-  if (!address) {
-    console.warn(`No contract address configured for chain ID: ${chainId}`);
-    return null;
-  }
-  
-  return address;
+  const address = CONTRACT_ADDRESSES[chainId as keyof ContractAddresses];
+  return address && address.length > 0 ? address : null;
 }
 
 export function isContractDeployed(chainId: number): boolean {
-  return !!getContractAddress(chainId);
+  const address = getContractAddress(chainId);
+  return address !== null && address !== '';
 }
 
 export function getSupportedNetworks(): number[] {
-  return Object.keys(CONTRACT_ADDRESSES)
-    .map(Number)
-    .filter(chainId => CONTRACT_ADDRESSES[chainId]);
+  return Object.keys(CONTRACT_ADDRESSES).map(Number);
 }

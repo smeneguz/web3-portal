@@ -5,6 +5,9 @@ import Layout from '@/components/common/Layout';
 import '@/styles/globals.css';
 import '@rainbow-me/rainbowkit/styles.css';
 
+import '@/utils/suppressENS';
+
+
 export default function App({ Component, pageProps }: AppProps) {
   const [mounted, setMounted] = useState(false);
 

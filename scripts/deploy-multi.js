@@ -10,124 +10,12 @@ function bigIntReplacer(key, value) {
   return value;
 }
 
-async function main() {
-  const networkName = hre.network.name;
-  const chainId = hre.network.config.chainId;
-  
-  console.log(`Deploying to ${networkName} (Chain ID: ${chainId})`);
-  
-  const [deployer] = await hre.ethers.getSigners();
-  console.log("Deploying contracts with account:", deployer.address);
-  console.log("Account balance:", (await hre.ethers.provider.getBalance(deployer.address)).toString());
-
-  const Web3PortalNFT = await hre.ethers.getContractFactory("Web3PortalNFT");
-  
-  const deployParams = getDeployParams(networkName);
-  console.log("Deploying with parameters:", {
-    ...deployParams,
-    mintPrice: hre.ethers.formatEther(deployParams.mintPrice) + " " + getNetworkCurrency(networkName)
-  });
-  
-  const contract = await Web3PortalNFT.deploy(
-    deployParams.name,
-    deployParams.symbol,
-    deployParams.baseURI,
-    deployParams.mintPrice
-  );
-
-  await contract.waitForDeployment();
-  const contractAddress = await contract.getAddress();
-  
-  console.log(`Web3PortalNFT deployed to: ${contractAddress}`);
-
-  // Salva info deployment con proper BigInt handling
-  const deploymentInfo = {
-    network: networkName,
-    chainId: chainId,
-    contractAddress: contractAddress,
-    deploymentTime: new Date().toISOString(),
-    parameters: {
-      name: deployParams.name,
-      symbol: deployParams.symbol,
-      baseURI: deployParams.baseURI,
-      mintPrice: deployParams.mintPrice.toString(), // Convert BigInt to string
-      mintPriceFormatted: hre.ethers.formatEther(deployParams.mintPrice) + " " + getNetworkCurrency(networkName)
-    },
-    deployer: deployer.address
-  };
-
-  const deploymentsDir = path.join(__dirname, '..', 'deployments');
-  if (!fs.existsSync(deploymentsDir)) {
-    fs.mkdirSync(deploymentsDir);
-  }
-
-  // Use bigIntReplacer for JSON serialization
-  fs.writeFileSync(
-    path.join(deploymentsDir, `${networkName}.json`),
-    JSON.stringify(deploymentInfo, bigIntReplacer, 2)
-  );
-
-  // Update .env.local
-  const envPath = path.join(__dirname, '..', '.env.local');
-  let envContent = "";
-  
-  if (fs.existsSync(envPath)) {
-    envContent = fs.readFileSync(envPath, "utf8");
-  }
-
-  const envKey = `NEXT_PUBLIC_CONTRACT_ADDRESS_${networkName.toUpperCase()}`;
-  const envLine = `${envKey}=${contractAddress}`;
-  
-  if (envContent.includes(envKey)) {
-    // Replace existing line
-    envContent = envContent.replace(
-      new RegExp(`${envKey}=.*`),
-      envLine
-    );
-  } else {
-    // Add new line
-    envContent += `\n${envLine}`;
-  }
-
-  fs.writeFileSync(envPath, envContent);
-
-  // Abilita minting se localhost
-  if (networkName === 'localhost') {
-    console.log("Enabling minting for localhost...");
-    try {
-      await contract.toggleMinting();
-      console.log("Minting enabled successfully!");
-    } catch (error) {
-      console.error("Failed to enable minting:", error.message);
-    }
-  }
-
-  console.log("\nDeployment Summary:");
-  console.log("==================");
-  console.log(`Network: ${networkName}`);
-  console.log(`Chain ID: ${chainId}`);
-  console.log(`Contract: ${contractAddress}`);
-  console.log(`Name: ${deployParams.name}`);
-  console.log(`Symbol: ${deployParams.symbol}`);
-  console.log(`Mint Price: ${hre.ethers.formatEther(deployParams.mintPrice)} ${getNetworkCurrency(networkName)}`);
-  console.log(`Base URI: ${deployParams.baseURI}`);
-  
-  if (networkName !== 'localhost') {
-    console.log(`\nAdd this to your .env.local:`);
-    console.log(`NEXT_PUBLIC_CONTRACT_ADDRESS_${networkName.toUpperCase()}=${contractAddress}`);
-  } else {
-    console.log(`\nContract added to .env.local automatically`);
-  }
-
-  console.log(`\nDeployment info saved to: deployments/${networkName}.json`);
-  console.log("🎉 Deployment completed successfully!");
-}
-
+// Network-specific deployment parameters
 function getDeployParams(networkName) {
   const baseParams = {
     name: "Web3Portal NFT",
     symbol: "WP3",
-    baseURI: "https://gateway.pinata.cloud/ipfs/YOUR_METADATA_HASH/",
+    baseURI: "https://gateway.pinata.cloud/ipfs/QmYourHashHere/",
   };
 
   switch (networkName) {
@@ -135,6 +23,7 @@ function getDeployParams(networkName) {
     case 'hardhat':
       return {
         ...baseParams,
+        name: "Web3Portal NFT (Local)",
         mintPrice: hre.ethers.parseEther("0.01")
       };
     
@@ -142,20 +31,21 @@ function getDeployParams(networkName) {
       return {
         ...baseParams,
         name: "Web3Portal NFT (Sepolia)",
-        mintPrice: hre.ethers.parseEther("0.001")
+        mintPrice: hre.ethers.parseEther("0.001") // Lower price for testnet
       };
     
-    case 'mumbai':
+    case 'amoy':
       return {
         ...baseParams,
-        name: "Web3Portal NFT (Mumbai)",
-        mintPrice: hre.ethers.parseEther("0.01")
+        name: "Web3Portal NFT (Amoy)",
+        mintPrice: hre.ethers.parseEther("0.001") // Lower price for testnet
       };
     
     case 'polygon':
       return {
         ...baseParams,
-        mintPrice: hre.ethers.parseEther("1.0")
+        name: "Web3Portal NFT",
+        mintPrice: hre.ethers.parseEther("1") // Higher price for mainnet
       };
     
     default:
@@ -166,19 +56,200 @@ function getDeployParams(networkName) {
   }
 }
 
+// Get network currency symbol
 function getNetworkCurrency(networkName) {
   switch (networkName) {
     case 'polygon':
-    case 'mumbai':
+    case 'amoy':
       return 'MATIC';
     default:
       return 'ETH';
   }
 }
 
+// Get block explorer URL
+function getBlockExplorerUrl(networkName, address) {
+  const explorers = {
+    sepolia: `https://sepolia.etherscan.io/address/${address}`,
+    amoy: `https://amoy.polygonscan.com/address/${address}`,
+    polygon: `https://polygonscan.com/address/${address}`,
+    localhost: '#', // No explorer for localhost
+    hardhat: '#'
+  };
+  return explorers[networkName] || '#';
+}
+
+async function main() {
+  const networkName = hre.network.name;
+  const chainId = hre.network.config.chainId;
+  const currency = getNetworkCurrency(networkName);
+  
+  console.log("🚀 Starting Web3Portal NFT Contract Deployment...\n");
+  console.log(`Deploying to ${networkName} (Chain ID: ${chainId})`);
+
+  try {
+    // Get deployment account
+    const [deployer] = await hre.ethers.getSigners();
+    const balance = await hre.ethers.provider.getBalance(deployer.address);
+    
+    console.log(`Deploying contracts with account: ${deployer.address}`);
+    console.log(`Account balance: ${hre.ethers.formatEther(balance)} ${currency}\n`);
+
+    // Check minimum balance for deployment
+    const minBalance = hre.ethers.parseEther("0.1");
+    if (balance < minBalance) {
+      throw new Error(`Insufficient balance for deployment. Need at least 0.1 ${currency}, have ${hre.ethers.formatEther(balance)} ${currency}`);
+    }
+
+    // Get deployment parameters for this network
+    const deployParams = getDeployParams(networkName);
+    
+    console.log("📄 Contract Parameters:");
+    console.log(`Name: ${deployParams.name}`);
+    console.log(`Symbol: ${deployParams.symbol}`);
+    console.log(`Base URI: ${deployParams.baseURI}`);
+    console.log(`Mint Price: ${hre.ethers.formatEther(deployParams.mintPrice)} ${currency}\n`);
+
+    // Get the contract factory
+    const Web3PortalNFT = await hre.ethers.getContractFactory("Web3PortalNFT");
+    
+    console.log("⏳ Deploying contract...");
+    
+    // Deploy with network-specific parameters
+    const contract = await Web3PortalNFT.deploy(
+      deployParams.name,
+      deployParams.symbol,
+      deployParams.baseURI,
+      deployParams.mintPrice
+    );
+
+    console.log("⏳ Waiting for deployment confirmation...");
+    await contract.waitForDeployment();
+
+    const contractAddress = await contract.getAddress();
+    const deploymentTx = contract.deploymentTransaction();
+    
+    console.log("✅ Contract deployed successfully!");
+    console.log(`📍 Contract Address: ${contractAddress}`);
+    console.log(`🔗 Transaction Hash: ${deploymentTx.hash}\n`);
+
+    // Wait for a few confirmations on testnets
+    if (networkName !== 'localhost' && networkName !== 'hardhat') {
+      console.log("⏳ Waiting for block confirmations...");
+      await deploymentTx.wait(3); // Wait for 3 confirmations
+      console.log("✅ Transaction confirmed!\n");
+    }
+
+    // Get contract info to verify deployment
+    const contractInfo = await contract.getContractInfo();
+    
+    console.log("📊 Contract Information:");
+    console.log(`Current Supply: ${contractInfo.currentSupply.toString()}`);
+    console.log(`Max Supply: ${contractInfo.maxSupply.toString()}`);
+    console.log(`Mint Price: ${hre.ethers.formatEther(contractInfo.currentPrice)} ${currency}`);
+    console.log(`Minting Active: ${contractInfo.isMintingActive}`);
+    console.log(`Whitelist Active: ${contractInfo.isWhitelistActive}`);
+    console.log(`Contract Paused: ${contractInfo.isPaused}\n`);
+
+    // Save deployment info
+    const deploymentInfo = {
+      network: networkName,
+      chainId: chainId,
+      contractAddress: contractAddress,
+      contractName: deployParams.name,
+      contractSymbol: deployParams.symbol,
+      baseURI: deployParams.baseURI,
+      mintPrice: deployParams.mintPrice.toString(),
+      deploymentHash: deploymentTx.hash,
+      timestamp: new Date().toISOString(),
+      blockExplorer: getBlockExplorerUrl(networkName, contractAddress),
+      currency: currency,
+      contractInfo: {
+        currentSupply: contractInfo.currentSupply.toString(),
+        maxSupply: contractInfo.maxSupply.toString(),
+        currentPrice: contractInfo.currentPrice.toString(),
+        isMintingActive: contractInfo.isMintingActive,
+        isWhitelistActive: contractInfo.isWhitelistActive,
+        isPaused: contractInfo.isPaused
+      }
+    };
+
+    // Create deployments directory
+    const deploymentsDir = path.join(__dirname, "../deployments");
+    if (!fs.existsSync(deploymentsDir)) {
+      fs.mkdirSync(deploymentsDir, { recursive: true });
+    }
+
+    // Save deployment info
+    const deploymentFile = path.join(deploymentsDir, `${networkName}.json`);
+    fs.writeFileSync(deploymentFile, JSON.stringify(deploymentInfo, bigIntReplacer, 2));
+    console.log(`💾 Deployment info saved to: ${deploymentFile}`);
+
+    // Update environment variables
+    const envPath = path.join(__dirname, "../.env.local");
+    let envContent = "";
+    
+    if (fs.existsSync(envPath)) {
+      envContent = fs.readFileSync(envPath, "utf8");
+    }
+
+    const envKey = `NEXT_PUBLIC_CONTRACT_ADDRESS_${networkName.toUpperCase()}`;
+    const envLine = `${envKey}=${contractAddress}`;
+    
+    if (envContent.includes(envKey)) {
+      envContent = envContent.replace(new RegExp(`${envKey}=.*`), envLine);
+    } else {
+      envContent += `\n${envLine}`;
+    }
+
+    fs.writeFileSync(envPath, envContent);
+    console.log(`🔧 Environment variable updated: ${envLine}\n`);
+
+    // Show deployment summary
+    console.log("🎉 Deployment Summary:");
+    console.log("==================");
+    console.log(`Network: ${networkName}`);
+    console.log(`Chain ID: ${chainId}`);
+    console.log(`Contract: ${contractAddress}`);
+    console.log(`Name: ${deployParams.name}`);
+    console.log(`Symbol: ${deployParams.symbol}`);
+    console.log(`Mint Price: ${hre.ethers.formatEther(deployParams.mintPrice)} ${currency}`);
+    console.log(`Base URI: ${deployParams.baseURI}`);
+    
+    if (getBlockExplorerUrl(networkName, contractAddress) !== '#') {
+      console.log(`🔗 View on Explorer: ${getBlockExplorerUrl(networkName, contractAddress)}`);
+    }
+
+    console.log(`\nAdd this to your .env.local:`);
+    console.log(`${envKey}=${contractAddress}`);
+
+    console.log("\n📝 Next Steps:");
+    console.log("1. ✅ Contract is deployed and verified");
+    console.log("2. 🔧 Environment variables updated");
+    console.log("3. ⚙️ Enable minting: npm run enable-minting:" + networkName);
+    console.log("4. 🎮 Test minting functionality");
+    console.log("5. 🎯 Start your frontend: npm run dev");
+
+  } catch (error) {
+    console.error("❌ Deployment failed:", error.message);
+    
+    if (error.message.includes('insufficient funds')) {
+      console.log("\n💡 Solutions:");
+      console.log(`- Get testnet tokens from faucets`);
+      if (networkName === 'sepolia') {
+        console.log(`- Sepolia faucet: https://sepoliafaucet.com/`);
+      } else if (networkName === 'amoy') {
+        console.log(`- Amoy faucet: https://faucet.polygon.technology/`);
+      }
+    }
+    
+    process.exit(1);
+  }
+}
+
 main()
   .then(() => process.exit(0))
   .catch((error) => {
-    console.error("Deployment failed:", error);
+    console.error("❌ Script failed:", error);
     process.exit(1);
   });

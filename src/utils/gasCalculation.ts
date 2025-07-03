@@ -1,6 +1,22 @@
 import { PublicClient } from 'viem';
 import { WEB3_PORTAL_NFT_ABI } from '@/contracts/abi';
 
+// Constants for gas calculation
+const GAS_CONSTANTS = {
+  FALLBACK_BASE_GAS: 150_000n,
+  FALLBACK_PER_TOKEN_GAS: 75_000n,
+  FALLBACK_BUFFER_GAS: 50_000n,
+  MAX_REASONABLE_GAS: 2_000_000n,
+  BUFFER_DIVISOR: 100n,
+} as const;
+
+const BUFFER_PERCENTAGES = {
+  SINGLE_MINT: 15,
+  SMALL_BATCH: 20,
+  MEDIUM_BATCH: 25,
+  LARGE_BATCH: 30,
+} as const;
+
 export interface GasEstimation {
   estimatedGas: bigint;
   gasWithBuffer: bigint;
@@ -33,7 +49,7 @@ export async function calculateMintGas(
 
     // Calculate buffer based on quantity and complexity
     const bufferPercentage = calculateBufferPercentage(quantity);
-    const gasWithBuffer = estimatedGas + (estimatedGas * BigInt(bufferPercentage) / 100n);
+    const gasWithBuffer = estimatedGas + (estimatedGas * BigInt(bufferPercentage) / GAS_CONSTANTS.BUFFER_DIVISOR);
 
     // Get current gas price for cost estimation
     let gasPriceEstimate: bigint | undefined;
@@ -69,13 +85,13 @@ export async function calculateMintGas(
 
 /**
  * Calculate buffer percentage based on transaction complexity
+ * More NFTs = higher complexity = larger buffer needed
  */
 function calculateBufferPercentage(quantity: number): number {
-  // More NFTs = higher complexity = larger buffer needed
-  if (quantity === 1) return 15; // 15% buffer for single mint
-  if (quantity <= 3) return 20;  // 20% buffer for small batch
-  if (quantity <= 5) return 25;  // 25% buffer for medium batch
-  return 30; // 30% buffer for large batch
+  if (quantity === 1) return BUFFER_PERCENTAGES.SINGLE_MINT;
+  if (quantity <= 3) return BUFFER_PERCENTAGES.SMALL_BATCH;
+  if (quantity <= 5) return BUFFER_PERCENTAGES.MEDIUM_BATCH;
+  return BUFFER_PERCENTAGES.LARGE_BATCH;
 }
 
 /**
@@ -83,15 +99,14 @@ function calculateBufferPercentage(quantity: number): number {
  * Based on empirical data from successful transactions
  */
 function calculateFallbackGas(quantity: number): bigint {
-  const baseGas = 150000n; // Base transaction cost
-  const perTokenGas = 75000n; // Cost per additional token
-  const bufferGas = 50000n; // Safety buffer
+  const { FALLBACK_BASE_GAS, FALLBACK_PER_TOKEN_GAS, FALLBACK_BUFFER_GAS } = GAS_CONSTANTS;
   
-  return baseGas + (BigInt(quantity) * perTokenGas) + bufferGas;
+  return FALLBACK_BASE_GAS + (BigInt(quantity) * FALLBACK_PER_TOKEN_GAS) + FALLBACK_BUFFER_GAS;
 }
 
 /**
  * Validate gas parameters before transaction
+ * Ensures user has sufficient balance and gas limit is reasonable
  */
 export function validateGasParameters(
   gasEstimation: GasEstimation,
@@ -109,11 +124,10 @@ export function validateGasParameters(
   }
 
   // Check if gas limit is reasonable (not too high to avoid overpaying)
-  const MAX_REASONABLE_GAS = 2000000n; // 2M gas limit
-  if (gasEstimation.gasWithBuffer > MAX_REASONABLE_GAS) {
+  if (gasEstimation.gasWithBuffer > GAS_CONSTANTS.MAX_REASONABLE_GAS) {
     return {
       isValid: false,
-      reason: `Gas limit too high: ${gasEstimation.gasWithBuffer}. Maximum allowed: ${MAX_REASONABLE_GAS}`
+      reason: `Gas limit too high: ${gasEstimation.gasWithBuffer}. Maximum allowed: ${GAS_CONSTANTS.MAX_REASONABLE_GAS}`
     };
   }
 
@@ -122,6 +136,7 @@ export function validateGasParameters(
 
 /**
  * Format gas information for display
+ * Converts BigInt values to human-readable strings
  */
 export function formatGasInfo(gasEstimation: GasEstimation): {
   estimatedGas: string;
@@ -138,13 +153,21 @@ export function formatGasInfo(gasEstimation: GasEstimation): {
 
   if (gasEstimation.totalGasCost) {
     // Convert wei to ETH (divide by 1e18)
-    const gasCostEth = Number(gasEstimation.totalGasCost) / 1e18;
-    result.gasCostEth = gasCostEth.toFixed(6);
+    const gasCostEth = formatWeiToEth(gasEstimation.totalGasCost);
+    result.gasCostEth = gasCostEth;
     
-    // Estimate USD cost (approximate ETH price)
-    const ethPriceUsd = 2000; // You could fetch this from an API
-    result.gasCostUsd = (gasCostEth * ethPriceUsd).toFixed(2);
+    // Estimate USD cost (this should ideally fetch from a price API)
+    const ethPriceUsd = 2000; // Placeholder - consider using a real price feed
+    result.gasCostUsd = (parseFloat(gasCostEth) * ethPriceUsd).toFixed(2);
   }
 
   return result;
+}
+
+/**
+ * Convert Wei to ETH with proper formatting
+ */
+function formatWeiToEth(weiValue: bigint): string {
+  const ethValue = Number(weiValue) / 1e18;
+  return ethValue.toFixed(6);
 }

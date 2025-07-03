@@ -10,23 +10,25 @@
     "compile": "hardhat compile",
     "deploy:localhost": "hardhat run scripts/deploy-multi.js --network localhost",
     "deploy:sepolia": "hardhat run scripts/deploy-multi.js --network sepolia",
-    "deploy:mumbai": "hardhat run scripts/deploy-multi.js --network mumbai",
+    "deploy:amoy": "hardhat run scripts/deploy-multi.js --network amoy",
     "deploy:polygon": "hardhat run scripts/deploy-multi.js --network polygon",
     "enable-minting:localhost": "hardhat run scripts/mintingActive.js --network localhost",
     "enable-minting:sepolia": "hardhat run scripts/mintingActive.js --network sepolia",
-    "enable-minting:mumbai": "hardhat run scripts/mintingActive.js --network mumbai",
+    "enable-minting:amoy": "hardhat run scripts/mintingActive.js --network amoy",
     "test": "hardhat test",
     "test:coverage": "hardhat coverage",
     "node": "hardhat node",
     "clean": "hardhat clean && rm -rf .next",
     "verify:sepolia": "hardhat verify --network sepolia",
+    "verify:amoy": "hardhat verify --network amoy",
     "accounts": "hardhat accounts"
   },
   "dependencies": {
+    "@openzeppelin/contracts": "^4.9.0",
     "@pinata/sdk": "^1.1.26",
     "@rainbow-me/rainbowkit": "^1.3.0",
     "@tailwindcss/line-clamp": "^0.4.4",
-    "@tanstack/react-query": "^4.35.0",
+    "@tanstack/react-query": "^4.40.0",
     "@types/node": "^20.0.0",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",
@@ -43,8 +45,7 @@
     "tailwindcss": "^3.3.0",
     "typescript": "^5.0.0",
     "viem": "^1.15.0",
-    "wagmi": "^1.4.0",
-    "@openzeppelin/contracts": "^4.9.0"
+    "wagmi": "^1.4.0"
   },
   "devDependencies": {
     "@nomicfoundation/hardhat-ethers": "^3.0.0",

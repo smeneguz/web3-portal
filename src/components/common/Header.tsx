@@ -1,85 +1,94 @@
-'use client';
-
-import { useState } from 'react';
+import React from 'react';
 import Link from 'next/link';
-import { ConnectButton } from '@rainbow-me/rainbowkit';
-import { Menu, X, Wallet, Code, Palette } from 'lucide-react';
+import { useRouter } from 'next/router';
+import { useAccount } from 'wagmi';
+import WalletConnect from '../wallet/WalletConnect';
+import NetworkSelector from '../wallet/NetworkSelector';
 
-export default function Header() {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+const Header: React.FC = () => {
+  const router = useRouter();
+  const { isConnected } = useAccount();
 
-  const navigation = [
-    { name: 'Home', href: '/', icon: <Code className="w-4 h-4" /> },
-    { name: 'Projects', href: '/projects', icon: <Code className="w-4 h-4" /> },
-    { name: 'NFT Mint', href: '/mint', icon: <Palette className="w-4 h-4" /> },
-    { name: 'About', href: '/about', icon: <Wallet className="w-4 h-4" /> },
+  const navItems = [
+    { href: '/', label: 'Home' },
+    { href: '/about', label: 'About' },
+    { href: '/projects', label: 'Projects' },
+    { href: '/mint', label: 'Mint NFT' },
   ];
 
+  const isActiveRoute = (href: string) => {
+    if (href === '/') {
+      return router.pathname === '/';
+    }
+    return router.pathname.startsWith(href);
+  };
+
   return (
-    <header className="fixed top-0 w-full bg-black/80 backdrop-blur-md border-b border-web3-primary/20 z-50">
-      <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <header className="bg-white shadow-sm border-b border-gray-200">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
+          {/* Logo */}
           <div className="flex-shrink-0">
             <Link href="/" className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-gradient-to-r from-web3-primary to-web3-secondary rounded-lg flex items-center justify-center">
-                <Code className="w-5 h-5 text-white" />
+              <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                <span className="text-white font-bold text-sm">W3</span>
               </div>
-              <span className="text-xl font-bold bg-gradient-to-r from-web3-primary to-web3-secondary bg-clip-text text-transparent">
-                Web3 Portal
-              </span>
+              <span className="font-bold text-xl text-gray-900">Web3Portal</span>
             </Link>
           </div>
 
-          <div className="hidden md:block">
-            <div className="ml-10 flex items-baseline space-x-4">
-              {navigation.map((item) => (
-                <Link
-                  key={item.name}
-                  href={item.href}
-                  className="flex items-center space-x-1 text-gray-300 hover:text-web3-accent px-3 py-2 rounded-md text-sm font-medium transition-colors"
-                >
-                  {item.icon}
-                  <span>{item.name}</span>
-                </Link>
-              ))}
-            </div>
-          </div>
+          {/* Navigation */}
+          <nav className="hidden md:flex items-center space-x-8">
+            {navItems.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`
+                  px-3 py-2 rounded-md text-sm font-medium transition-colors
+                  ${isActiveRoute(item.href)
+                    ? 'text-blue-600 bg-blue-50'
+                    : 'text-gray-700 hover:text-blue-600 hover:bg-gray-50'
+                  }
+                `}
+              >
+                {item.label}
+              </Link>
+            ))}
+          </nav>
 
-          <div className="hidden md:block">
-            <ConnectButton />
-          </div>
-
-          <div className="md:hidden">
-            <button
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="text-gray-300 hover:text-white p-2"
-            >
-              {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-            </button>
+          {/* Right side - Network Selector + Wallet */}
+          <div className="flex items-center space-x-4">
+            {/* Network Selector - Show only when connected */}
+            {isConnected && <NetworkSelector />}
+            
+            {/* Wallet Connect */}
+            <WalletConnect />
           </div>
         </div>
+      </div>
 
-        {isMenuOpen && (
-          <div className="md:hidden">
-            <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-black/90 rounded-lg mt-2">
-              {navigation.map((item) => (
-                <Link
-                  key={item.name}
-                  href={item.href}
-                  className="flex items-center space-x-2 text-gray-300 hover:text-web3-accent block px-3 py-2 rounded-md text-base font-medium"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  {item.icon}
-                  <span>{item.name}</span>
-                </Link>
-              ))}
-              <div className="px-3 py-2">
-                <ConnectButton />
-              </div>
-            </div>
-          </div>
-        )}
-      </nav>
+      {/* Mobile Navigation */}
+      <div className="md:hidden border-t border-gray-200">
+        <div className="px-4 py-3 space-y-1">
+          {navItems.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={`
+                block px-3 py-2 rounded-md text-base font-medium transition-colors
+                ${isActiveRoute(item.href)
+                  ? 'text-blue-600 bg-blue-50'
+                  : 'text-gray-700 hover:text-blue-600 hover:bg-gray-50'
+                }
+              `}
+            >
+              {item.label}
+            </Link>
+          ))}
+        </div>
+      </div>
     </header>
   );
-}
+};
+
+export default Header;

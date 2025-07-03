@@ -39,6 +39,7 @@ const getContractAddress = (chainId: number): string | null => {
     const addresses: Record<number, string> = {
         31337: process.env.NEXT_PUBLIC_CONTRACT_ADDRESS_LOCALHOST || '',
         11155111: process.env.NEXT_PUBLIC_CONTRACT_ADDRESS_SEPOLIA || '',
+        80002: process.env.NEXT_PUBLIC_CONTRACT_ADDRESS_AMOY || '', // Changed from 80001 to 80002
         1: process.env.NEXT_PUBLIC_CONTRACT_ADDRESS_MAINNET || '',
         137: process.env.NEXT_PUBLIC_CONTRACT_ADDRESS_POLYGON || '',
     };
@@ -51,6 +52,7 @@ const getChainConfig = (chainId: number) => {
         1: mainnet,
         11155111: sepolia,
         137: polygon,
+        80002: polygon, // Use polygon config for Amoy (same as mainnet but testnet)
         31337: hardhat,
     };
     return chains[chainId as keyof typeof chains] || hardhat;

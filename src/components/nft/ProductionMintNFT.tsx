@@ -195,7 +195,9 @@ function ProductionMintNFTContent() {
         <div className="card text-center py-12">
           <AlertTriangle className="w-16 h-16 text-red-400 mx-auto mb-6" />
           <h2 className="text-2xl font-bold mb-4">Contract Error</h2>
-          <p className="text-gray-400 mb-6">{error.message}</p>
+          <p className="text-gray-400 mb-6">
+            {error instanceof Error ? error.message : 'An unknown error occurred'}
+          </p>
           <button
             onClick={handleRefresh}
             className="btn-primary flex items-center space-x-2 mx-auto"
