@@ -1,21 +1,13 @@
 {
   "network": "localhost",
-  "chainId": 31337,
-  "contractAddress": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+  "contractAddress": "0xa513E6E4b8f2a923D98304ec87F64353C4D5C853",
+  "deployerAddress": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+  "deploymentTx": "0x9a368c5f641578d5def15d707c4f68156bababc5c77f719ede90128f8cbe5abd",
+  "deployedAt": "2025-07-03T12:33:16.281Z",
   "contractName": "Web3Portal NFT (Local)",
-  "contractSymbol": "WP3",
-  "baseURI": "https://gateway.pinata.cloud/ipfs/QmYourHashHere/",
-  "mintPrice": "10000000000000000",
-  "deploymentHash": "0x99b7328b89826c08067ea9c964fe28d3f835f66862246b71c2059b426caf84d9",
-  "timestamp": "2025-07-03T09:03:09.008Z",
-  "blockExplorer": "#",
+  "symbol": "WP3",
+  "mintPrice": "0.01",
   "currency": "ETH",
-  "contractInfo": {
-    "currentSupply": "0",
-    "maxSupply": "10000",
-    "currentPrice": "10000000000000000",
-    "isMintingActive": false,
-    "isWhitelistActive": false,
-    "isPaused": false
-  }
+  "blockExplorer": "#",
+  "baseURI": "Updated via setBaseURI"
 }
