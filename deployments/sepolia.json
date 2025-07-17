@@ -1,0 +1,17 @@
+{
+  "address": "0xffc24b4fC2DfD30F33877622C31b491Ab2A49042",
+  "deployer": "0x749670122293a05fCA4F2B2F704fd11F01F7e926",
+  "timestamp": "2025-07-17T13:12:14.457Z",
+  "network": "sepolia",
+  "chainId": 11155111,
+  "transactionHash": "0x990e9293cec3fc4fe63203960ded80eb7e63766acbe68b3e23d14b50f35a8fb0",
+  "config": {
+    "name": "Sepolia Testnet",
+    "chainId": 11155111,
+    "displayName": "Web3Portal NFT (Sepolia)",
+    "symbol": "WP3S",
+    "baseURI": "https://ipfs.io/ipfs/",
+    "mintPrice": "0.01",
+    "envVar": "NEXT_PUBLIC_CONTRACT_ADDRESS_SEPOLIA"
+  }
+}

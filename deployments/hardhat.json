@@ -1,0 +1,14 @@
+{
+  "network": "hardhat",
+  "chainId": 31337,
+  "contractAddress": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+  "deployerAddress": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+  "deploymentTx": "0xcdefb166d2774ff3cc85359dc0a4499cd7b681c2bc422427af69ab30ec9e3bef",
+  "deployedAt": "2025-07-03T13:49:22.982Z",
+  "contractName": "Web3Portal NFT (Local)",
+  "symbol": "WP3",
+  "mintPrice": "0.01",
+  "currency": "ETH",
+  "blockExplorer": "#",
+  "baseURI": "Updated via setBaseURI"
+}

@@ -1,13 +1,17 @@
 {
+  "address": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+  "deployer": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+  "timestamp": "2025-07-17T12:55:25.561Z",
   "network": "localhost",
-  "contractAddress": "0xa513E6E4b8f2a923D98304ec87F64353C4D5C853",
-  "deployerAddress": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
-  "deploymentTx": "0x9a368c5f641578d5def15d707c4f68156bababc5c77f719ede90128f8cbe5abd",
-  "deployedAt": "2025-07-03T12:33:16.281Z",
-  "contractName": "Web3Portal NFT (Local)",
-  "symbol": "WP3",
-  "mintPrice": "0.01",
-  "currency": "ETH",
-  "blockExplorer": "#",
-  "baseURI": "Updated via setBaseURI"
+  "chainId": 31337,
+  "transactionHash": "0xcaa17dafc7da9f8650da57a1c083dd5603ff0f8a3dcc2497acf85d562dd632d9",
+  "config": {
+    "name": "Hardhat Local",
+    "chainId": 31337,
+    "displayName": "Web3Portal NFT (Local)",
+    "symbol": "WP3L",
+    "baseURI": "https://ipfs.io/ipfs/",
+    "mintPrice": "0.01",
+    "envVar": "NEXT_PUBLIC_CONTRACT_ADDRESS_LOCALHOST"
+  }
 }

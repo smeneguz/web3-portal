@@ -62,7 +62,9 @@ const NFTGallery: React.FC = () => {
         const baseUrls: Record<number, string> = {
             1: 'https://etherscan.io',
             11155111: 'https://sepolia.etherscan.io',
-            31337: '#', // localhost
+            80002: 'https://amoy.polygonscan.com',
+            137: 'https://polygonscan.com',
+            31337: '#', // localhost - no explorer
         };
         
         const baseUrl = baseUrls[chain.id];

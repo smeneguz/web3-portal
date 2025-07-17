@@ -8,10 +8,13 @@
     "start": "next start",
     "lint": "next lint",
     "compile": "hardhat compile",
-    "deploy:localhost": "hardhat run scripts/deploy-multi.js --network localhost",
-    "deploy:sepolia": "hardhat run scripts/deploy-multi.js --network sepolia",
-    "deploy:amoy": "hardhat run scripts/deploy-multi.js --network amoy",
-    "deploy:polygon": "hardhat run scripts/deploy-multi.js --network polygon",
+    "deploy:localhost": "node scripts/network-manager.js deploy localhost",
+    "deploy:sepolia": "node scripts/network-manager.js deploy sepolia",
+    "deploy:amoy": "node scripts/network-manager.js deploy amoy",
+    "deploy:polygon": "node scripts/network-manager.js deploy polygon",
+    "deploy:status": "node scripts/network-manager.js status",
+    "deploy:list": "node scripts/network-manager.js list",
+    "deploy:check": "node scripts/network-consistency-check.js",
     "enable-minting:localhost": "hardhat run scripts/mintingActive.js --network localhost",
     "enable-minting:sepolia": "hardhat run scripts/mintingActive.js --network sepolia",
     "enable-minting:amoy": "hardhat run scripts/mintingActive.js --network amoy",
@@ -21,7 +24,8 @@
     "clean": "hardhat clean && rm -rf .next",
     "verify:sepolia": "hardhat verify --network sepolia",
     "verify:amoy": "hardhat verify --network amoy",
-    "accounts": "hardhat accounts"
+    "accounts": "hardhat accounts",
+    "network": "node scripts/network-manager.js"
   },
   "dependencies": {
     "@openzeppelin/contracts": "^4.9.0",

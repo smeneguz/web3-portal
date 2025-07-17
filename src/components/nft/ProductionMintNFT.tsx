@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useAccount } from 'wagmi';
+import { useAccount, useNetwork } from 'wagmi';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { 
   Palette, 
@@ -25,6 +25,7 @@ import {
   Lock
 } from 'lucide-react';
 import { useWeb3PortalNFT } from '@/hooks/contracts/useWeb3PortalNFT';
+import { getChainById } from '@/utils/chains';
 import { Toaster, toast } from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -80,8 +81,13 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
 
 function ProductionMintNFTContent() {
   const { address, isConnected } = useAccount();
+  const { chain } = useNetwork();
   const [mounted, setMounted] = useState(false);
   const [selectedQuantity, setSelectedQuantity] = useState(1);
+
+  // Get current network information
+  const currentNetwork = chain ? getChainById(chain.id) : null;
+  const networkDisplayName = currentNetwork?.name || 'Unknown Network';
 
   const {
     contractAddress,
@@ -150,7 +156,7 @@ function ProductionMintNFTContent() {
 
   const openContractInfo = () => {
     if (contractAddress) {
-      toast('Contract deployed on localhost network', {
+      toast(`Contract deployed on ${networkDisplayName}`, {
         icon: 'ℹ️',
         style: {
           background: '#1f2937',
@@ -588,7 +594,7 @@ function ProductionMintNFTContent() {
             
             <div className="flex items-center justify-between p-3 bg-gray-800/50 rounded-lg">
               <span className="text-sm text-gray-400">Network</span>
-              <span className="text-sm text-web3-primary">Localhost</span>
+              <span className="text-sm text-web3-primary">{networkDisplayName}</span>
             </div>
             
             {contractInfo?.isWhitelistActive && (
